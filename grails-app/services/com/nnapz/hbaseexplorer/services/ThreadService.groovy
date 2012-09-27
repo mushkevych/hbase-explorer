@@ -21,7 +21,7 @@ package com.nnapz.hbaseexplorer.services
  * duty.
  *
  * setStatus()/getStatus() offers a small handover facility, e.g. to display a status information.
- * 
+ *
  * @author Bob Schulze
  */
 class ThreadService {
@@ -36,80 +36,79 @@ class ThreadService {
 
     /**
      * Execute a new Thread with a given name.
-     * @return false, if the thread was not executed, because a running thread with the given name exists already.
+     * @return false , if the thread was not executed, because a running thread with the given name exists already.
      */
-    synchronized boolean execute(String threadName, Closure runnable ) {
-      if (isRunning(threadName)) return false
-      Thread thread = Thread.start(threadName, runnable)
-      executingThreads.put(threadName, thread)
-      return true
+    synchronized boolean execute(String threadName, Closure runnable) {
+        if (isRunning(threadName)) return false
+        Thread thread = Thread.start(threadName, runnable)
+        executingThreads.put(threadName, thread)
+        return true
     }
 
-   /**
-    * Check if a thread is running.
-    * @return true, if the named thread is running.
-    */
+    /**
+     * Check if a thread is running.
+     * @return true , if the named thread is running.
+     */
     synchronized boolean isRunning(String threadName) {
-      Thread theOne = executingThreads.get(threadName)
-      if (theOne == null) return false
-      if (theOne.isAlive()) return true;
-      // its dead
-      return false
+        Thread theOne = executingThreads.get(threadName)
+        if (theOne == null) return false
+        if (theOne.isAlive()) return true;
+        // its dead
+        return false
     }
 
-
-   /**
-    * Cleanup thread list 
-    */
+    /**
+     * Cleanup thread list
+     */
     public void cleanup() {
-      def deadList = []
-      executingThreads.each{String k, Thread v ->
-        if (!isRunning(k))  deadList << k
-      }
-      deadList.each{ String threadName ->
-        executingThreads.remove(threadName)
-        threadStatus.remove(threadName)
-      }
+        def deadList = []
+        executingThreads.each {String k, Thread v ->
+            if (!isRunning(k)) deadList << k
+        }
+        deadList.each { String threadName ->
+            executingThreads.remove(threadName)
+            threadStatus.remove(threadName)
+        }
     }
-   /**
-    * Provide a list of threads currently running.
-    * Cleans up old threads from the list, should there be any.
-    */
+    /**
+     * Provide a list of threads currently running.
+     * Cleans up old threads from the list, should there be any.
+     */
     public def getThreads() {
-      cleanup();
-      def ret = []
-      executingThreads.each{String k, Thread v ->
-        if (isRunning(k))  ret << v
-      }
-      return ret;
+        cleanup();
+        def ret = []
+        executingThreads.each {String k, Thread v ->
+            if (isRunning(k)) ret << v
+        }
+        return ret;
     }
 
-   /**
-    * Blocks until the closure returns true. Called from within the execute()-Closures, within the same thread, thats why
-    * there is no thread reference here.
-    * @see HbaseService#pushTableStats on how to use it.
-    * @tester a closure that should return true if we should stop waiting
-    */
+    /**
+     * Blocks until the closure returns true. Called from within the execute()-Closures, within the same thread, thats why
+     * there is no thread reference here.
+     * @see HbaseService#pushTableStats on how to use it.
+     * @tester a closure that should return true if we should stop waiting
+     */
     public boolean waitFor(int tests, int milliSeconds, Closure tester) {
-      while (!tester.call()) {
-        Thread.sleep(milliSeconds);
-        tests --;
-        if (tests <= 0) return false
-      }
-      return true
+        while (!tester.call()) {
+            Thread.sleep(milliSeconds);
+            tests--;
+            if (tests <= 0) return false
+        }
+        return true
     }
 
-   /**
-    * Offer a way to store status information to a thread.
-    */
+    /**
+     * Offer a way to store status information to a thread.
+     */
     public void setStatus(String threadName, String newStatusMessage) {
-      threadStatus.put(threadName, newStatusMessage);
+        threadStatus.put(threadName, newStatusMessage);
     }
 
-   /**
-    * Get the status information for the given thread.
-    */
+    /**
+     * Get the status information for the given thread.
+     */
     public String getStatus(String threadName) {
-      return threadStatus.get(threadName)
+        return threadStatus.get(threadName)
     }
 }

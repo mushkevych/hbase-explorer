@@ -13,23 +13,23 @@
  */
 package com.nnapz.hbaseexplorer.mr;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.NavigableMap;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableMapper;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.NavigableMap;
 
 /**
  * Get some stats about a table.  Currently to be executed using "hadoop jar ...", but its supposed to get under
@@ -46,29 +46,29 @@ public class TableStats {
 
     public static final String RETRIEVED_ROWS = "RETRIEVED_ROWS";    // row count
     public static final String VALUES_COUNT = "VALUES_COUNT";   // sum of number of values (if they exists for a column)
-                                                              //    for the whole table or a family
+    //    for the whole table or a family
     public static final String VALUES_SIZE = "VALUES_SIZE";     // sum of size of values
     public static final String COLUMNS_SIZE = "COLUMNS_SIZE";   // size of columns for a family
     public static final String TOTAL_TIMESTAMPS = "TOTAL_TIMESTAMPS";    // for the whole table or a family
-                                                              // for a record: unique per record
-                                                              // for a family: total entries for a timestamp
+    // for a record: unique per record
+    // for a family: total entries for a timestamp
     public static final String COLUMNS_COUNT = "COLUMNS_COUNT"; // sum of column qualifiers that exist
     public static final String DATA_SIZE = "DATA_SIZE";         // data size
     public static final String SUM_TIME_PER_MAP = "SUM_TIME_PER_MAP";    // sum of time needed per map
     public static final String EXCEPTIONS_MAPPER = "EXCEPTIONS_MAPPER";  // sum of exceptions
 
-   /**
-    * Follows the normal M/R patterns
-    */
-  static class RowCountMapper extends TableMapper<NullWritable, NullWritable> {
-
-
-       /**
-     * M/R map call
+    /**
+     * Follows the normal M/R patterns
      */
-    @Override
-    public void map(ImmutableBytesWritable row, Result result, Context context)
-        throws IOException {
+    static class RowCountMapper extends TableMapper<NullWritable, NullWritable> {
+
+
+        /**
+         * M/R map call
+         */
+        @Override
+        public void map(ImmutableBytesWritable row, Result result, Context context)
+                throws IOException {
             long start = System.currentTimeMillis();
             try {
                 context.getCounter(COUNTER_GROUP, RETRIEVED_ROWS).increment(1L);
@@ -79,7 +79,7 @@ public class TableStats {
                 int valueSize = 0;
                 NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> rowData = result.getMap();
                 HashSet<Long> timestamps = new HashSet<Long>();
-                for (byte[] family: rowData.keySet()) {
+                for (byte[] family : rowData.keySet()) {
                     String familyName = Bytes.toString(family);
                     NavigableMap<byte[], NavigableMap<Long, byte[]>> columns = rowData.get(family);
                     if (columns != null) {
@@ -88,7 +88,7 @@ public class TableStats {
                         int valueCountForFamily = 0;
                         long valueSizeForFamily = 0;
                         long columnSizeForFamily = 0;
-                        for (byte[] column: columns.keySet()) {
+                        for (byte[] column : columns.keySet()) {
                             columnSize += column.length;
                             columnSizeForFamily += column.length;
                             NavigableMap<Long, byte[]> values = columns.get(column);
@@ -96,7 +96,7 @@ public class TableStats {
                             //context.getCounter(familyName, columnName + "_TIMESTAMPS").increment(values.size());
                             //int columnValues = 0;
                             context.getCounter(COUNTER_GROUP_FAMILY_PREFIX + familyName, TOTAL_TIMESTAMPS).increment(values.size());
-                            for (Long ts: values.keySet()) {
+                            for (Long ts : values.keySet()) {
                                 timestamps.add(ts);
                                 byte[] value = values.get(ts);
                                 if (value != null && value.length > 0) {   // ther is no null String in hbase
@@ -120,13 +120,13 @@ public class TableStats {
                 context.getCounter(COUNTER_GROUP, COLUMNS_SIZE).increment(columnSize);
                 context.getCounter(COUNTER_GROUP, VALUES_COUNT).increment(valueCount);
                 context.getCounter(COUNTER_GROUP, VALUES_SIZE).increment(valueSize);
-                context.getCounter(COUNTER_GROUP, DATA_SIZE).increment(columnCount * 8 /* long */  + valueSize + columnSize);
+                context.getCounter(COUNTER_GROUP, DATA_SIZE).increment(columnCount * 8 /* long */ + valueSize + columnSize);
 
             } catch (Exception e) {
                 context.getCounter(COUNTER_GROUP, EXCEPTIONS_MAPPER).increment(1L);
                 e.printStackTrace();
                 if (e instanceof IOException) {
-                    throw (IOException)e;
+                    throw (IOException) e;
                 }
             }
             context.getCounter(COUNTER_GROUP, SUM_TIME_PER_MAP).increment(System.currentTimeMillis() - start);
@@ -134,44 +134,46 @@ public class TableStats {
 
     }
 
-  /**
-   * M/R Job setup. No reduce.
-   * @param conf a suitable hadoop+hbase configuration
-   * @param tableName the table we want to get stats from
-   * @return the Job object, to be started
-   * @throws java.io.IOException any hadoop IO problem
-   */
-  public static Job createSubmittableJob(Configuration conf, String tableName)
-      throws IOException {
+    /**
+     * M/R Job setup. No reduce.
+     *
+     * @param conf      a suitable hadoop+hbase configuration
+     * @param tableName the table we want to get stats from
+     * @return the Job object, to be started
+     * @throws java.io.IOException any hadoop IO problem
+     */
+    public static Job createSubmittableJob(Configuration conf, String tableName)
+            throws IOException {
 
-      Job job = new Job(conf, NAME + "_" + tableName);
-      if (job.getJar() == null) {
-          job.setJarByClass(TableStats.class);  // otherwise set in conf already
-      }
-      Scan scan = new Scan();
-      scan.setMaxVersions(10000);  // todo fixme
-      TableMapReduceUtil.initTableMapperJob(tableName, scan, RowCountMapper.class,
-              Text.class, Result.class, job);
-      job.setOutputFormatClass(NullOutputFormat.class);
-      job.setNumReduceTasks(0);
-      
-      return job;
-  }
+        Job job = new Job(conf, NAME + "_" + tableName);
+        if (job.getJar() == null) {
+            job.setJarByClass(TableStats.class);  // otherwise set in conf already
+        }
+        Scan scan = new Scan();
+        scan.setMaxVersions(10000);  // todo fixme
+        TableMapReduceUtil.initTableMapperJob(tableName, scan, RowCountMapper.class,
+                Text.class, Result.class, job);
+        job.setOutputFormatClass(NullOutputFormat.class);
+        job.setNumReduceTasks(0);
 
-  /**
-   * Setup for jar submit. Assumes a working hadoop environment.
-   * @param args main args
-   * @throws Exception just any ex
-   */
-  public static void main(String[] args) throws Exception {
-    Configuration conf = HBaseConfiguration.create();
-    String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-    if (otherArgs.length < 1) {
-      System.err.println("ERROR: Wrong number of parameters: " + args.length);
-      System.err.println("Usage: TableStats <tablename>");
-      System.exit(-1);
+        return job;
     }
-    Job job = createSubmittableJob(conf, args[0]);
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
-  }
+
+    /**
+     * Setup for jar submit. Assumes a working hadoop environment.
+     *
+     * @param args main args
+     * @throws Exception just any ex
+     */
+    public static void main(String[] args) throws Exception {
+        Configuration conf = HBaseConfiguration.create();
+        String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
+        if (otherArgs.length < 1) {
+            System.err.println("ERROR: Wrong number of parameters: " + args.length);
+            System.err.println("Usage: TableStats <tablename>");
+            System.exit(-1);
+        }
+        Job job = createSubmittableJob(conf, args[0]);
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
 }

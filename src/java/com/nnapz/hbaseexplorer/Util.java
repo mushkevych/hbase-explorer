@@ -16,18 +16,19 @@ package com.nnapz.hbaseexplorer;
 
 /**
  * todo: use some common library
+ *
  * @author Bob Schulze
  */
 public class Util {
 
-   public static boolean getBoolean(String value, boolean def) {
-      if (value == null | value.length() == 0) return def;
-      return Boolean.valueOf(value);
-  }
+    public static boolean getBoolean(String value, boolean def) {
+        if (value == null || value.length() == 0) return def;
+        return Boolean.valueOf(value);
+    }
 
-  public static int getInt(String value, int def) {
-      if (value == null || value.length() == 0) return def;
-      return Integer.parseInt(value);
-  }
+    public static int getInt(String value, int def) {
+        if (value == null || value.length() == 0) return def;
+        return Integer.parseInt(value);
+    }
 
 }

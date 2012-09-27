@@ -19,19 +19,19 @@ import com.nnapz.hbaseexplorer.domain.HbaseFamilyStats
 import com.nnapz.hbaseexplorer.domain.HbaseSource
 import com.nnapz.hbaseexplorer.domain.HbaseTableStats
 import com.nnapz.hbaseexplorer.mr.TableStats
+import com.reinvent.synergy.data.primarykey.AbstractPrimaryKey
+import com.reinvent.synergy.data.system.PoolManager
+import com.reinvent.synergy.data.system.TableContext
 import org.apache.hadoop.hbase.HColumnDescriptor
 import org.apache.hadoop.hbase.HTableDescriptor
 import org.apache.hadoop.hbase.MasterNotRunningException
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.hbase.client.HTablePool
+import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.mapreduce.Job
 
 import java.util.Map.Entry
-import org.apache.hadoop.hbase.client.Result
-import com.reinvent.synergy.data.system.PoolManager
-import com.reinvent.synergy.data.system.TableContext
-import com.reinvent.synergy.data.primarykey.AbstractPrimaryKey
 
 /**
  * Groovy Wrapper to access the HBaseService.
@@ -298,10 +298,11 @@ class HbaseService {
     }
 
     /* ORM SUPPORT SECTION*/
+
     public byte[] generateRowKeyFromParams(String tableName, Map params) {
         byte[] pk;
         try {
-            PoolManager poolManager = TableContext.getPoolManager(tableName)    ;
+            PoolManager poolManager = TableContext.getPoolManager(tableName);
             AbstractPrimaryKey primaryKey = poolManager.getPrimaryKey();
             Map<String, Object> components = new HashMap<String, Object>();
 

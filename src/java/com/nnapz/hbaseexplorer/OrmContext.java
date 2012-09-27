@@ -27,12 +27,12 @@ class OrmDefault implements OrmInterface {
     @Override
     public Map<byte[], Map<Long, Map<String, Map<String, String>>>> parseResults(String tableName, Result[] results) {
         Map<byte[], Map<Long, Map<String, Map<String, String>>>> casted =
-     			        new TreeMap<byte[], Map<Long, Map<String, Map<String, String>>>>();
+                new TreeMap<byte[], Map<Long, Map<String, Map<String, String>>>>();
 
         Map<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>> res =
-     			        new TreeMap<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>>();
+                new TreeMap<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>>();
 
-        for (Result row: results) {
+        for (Result row : results) {
             NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> map = row.getMap();
             Map<Long, Map<String, Map<byte[], byte[]>>> rowByTs = HBaseClient.remapByTimestamp(map);
             res.put(row.getRow(), rowByTs);
@@ -112,7 +112,7 @@ class OrmSurus implements OrmInterface {
             PoolManager poolManager = TableContext.getPoolManager(tableName);
             EntityService entityService = poolManager.getEntityService();
 
-            for (Result result: results) {
+            for (Result result : results) {
                 @SuppressWarnings({"unchecked"})
                 Map<String, Map<String, String>> retrievedMap = (Map<String, Map<String, String>>) entityService.parseIntoMap(result);
                 Map<Long, Map<String, Map<String, String>>> wrapper = new HashMap<Long, Map<String, Map<String, String>>>();
@@ -180,7 +180,7 @@ public class OrmContext {
     /**
      * @param tableName the
      * @return custom ORM if @containsOrmFor returns True for given tableName,
-     * and instance of OrmDefault in case table is not covered by any custom ORMs
+     *         and instance of OrmDefault in case table is not covered by any custom ORMs
      */
     public static OrmInterface getOrmFor(String tableName) {
         for (OrmInterface orm : CONTEXT) {
