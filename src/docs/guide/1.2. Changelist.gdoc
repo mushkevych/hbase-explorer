@@ -1,0 +1,15 @@
+VERSION 0.5.0
+* Grails upgrade to version 2.0 ( temporarly disabled maven support )
+
+VERSION 0.4.3
+* Possibility to specify HDFS credentials 
+
+VERSION 0.4.2
+* Code refactoring
+* Advanced configuration option by uploading hadoop .xml config files
+
+VERSION 0.4.1
+* HBase libraries switched to : hbase 0.90.1, zookeeper 3.3.3, hadoop 0.20.1 (Issue 3072491)
+* Re-use of HBase connections 
+* Handling connection exceptions (Issue 3303376)
+* Connection recovery fixed (Issue 3303377)

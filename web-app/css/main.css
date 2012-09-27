@@ -1,0 +1,135 @@
+input, textarea, select, .uneditable-input {
+	height: auto !important;	
+}
+
+.left-td {
+	text-align: right !important;
+	font-weight: bold;
+	width:30%;
+}
+
+i.cloud-name {
+	color: #08C;
+}
+
+.offline {
+	color: #AAAAAA;
+	font-style: italic;
+}
+
+.table-control {	
+	margin-top: 3px;
+	width: 100px !important;
+	font-style: normal;
+	padding: 0;
+}
+
+.left {
+	float:left;
+	margin-right:10px;	
+	margin-left: 10px;
+}
+
+.scan-form-field {
+	margin-right: 10px;
+	float:left;
+}
+
+h1 {
+	font-size: 24px;
+	line-height: 28px;
+	margin-bottom: 15px;
+}
+
+
+#getresult {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+}
+
+#getresult th, #getresult td {
+	line-height: 14px;
+}
+
+#getresult tbody tr:hover td, #getresult tbody tr:hover th {
+	background-color: #EDF9FF;
+}
+
+.flatrow {
+	background-color: #F2F2F2;
+	
+}
+
+#getresult th {
+	font-size: 15px;
+	font-variant: small-caps;
+}
+
+#getresult td {
+	border: 1px solid #DDDDDD;
+}
+span.columnname {
+	font-weight: bold;
+}
+
+span.switch {
+	cursor: pointer;
+	font-style: oblique;
+	color: #08C;
+}
+
+.dropdown-submit-btn {
+	width: 100%;
+	background:none;
+	border:0;
+	display: block;
+	padding: 3px 15px;
+	clear:both;
+	font-weight: normal;
+	line-height: 18px;
+	white-space: nowrap;
+}
+
+.dropdown-submit-btn :HOVER {
+	color: white;
+	text-decoration: none;
+	background-color: #08C;
+}
+
+span.rowkey {
+	color: #5E5E5E;
+	font-weight: bold;
+}
+
+.navbar .nav > li > a {
+	font-size: 15px;
+	color: #AAAAAA;
+}
+
+.threads {
+	position: fixed;
+	top: 55px;
+	right:20px;
+	z-index: 1000;
+}
+
+.threads ul {
+	list-style-type: none;
+	margin-left: 10px;
+}
+
+.footer {
+	width: 100%;
+	text-align: center;
+	font-size: smaller;
+}
+
+.footer ul {
+	list-style-type: none;
+}
+
+.footer ul li {
+	display: inline;
+	
+}
+

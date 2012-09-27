@@ -1,0 +1,22 @@
+By default application has security model based on @Spring Security@.
+
+For first log in use username: _admin_, password: _admin_
+ 
+There are three roles defined, for now two of them are used
+
+	* ROLE_ROOT - Full control of the application including credentials management.
+	
+	* ROLE_USER - Can use all HBase related functions but not to credentials management.
+	  
+
+h4. Disabling Security 
+
+You can easily disable access control
+by placing file @hbaseexplorer--config.groovy@ in @shared@ folder of tomcat directory, containing entry:
+
+{code}
+hbaseexplorer.security.active=false
+{code}
+
+
+ 

@@ -1,0 +1,5 @@
+_HBaseExplorer_ is a tool that allows to manipulate and explore HBase instances. See [documentation|http://hbase.apache.org/]
+to learn more about HBase and its Data Storage Model. The Goal is to have a Administrators Utility for
+maintaining the potentially huge data sets in various HBase instances. While there is a HBase Shell UI
+(that can also be used to script administrative tasks), this tool shall allow to get a bit more visual
+insight into the data.

@@ -1,0 +1,56 @@
+This Project is based on the GRAILS framework. See
+
+  http://grails.org/
+
+for details. The resulting artifact is a WAR file, that can be deployed into any J2EE container.
+
+0. Install Java      (use the JDK, not the JRE only versions)
+   Install Grails    http://grails.org/
+   Install Tomcat    http://tomcat.apache.org/download-60.cgi
+
+1. Checkout Code with subversion
+svn co https://hbaseexplorer.svn.sourceforge.net/svnroot/hbaseexplorer hbaseexplorer
+
+2. Set Up you IDE
+What you checked out is the top level of the grails project. An IDE with GRAILS support may detect this automatically.
+
+3. Compile
+Unless you do it with your IDE, you may use the usual GRAILs commands to manage compilation and building, e.g.
+    grails compile
+    grails doc
+    grails war
+
+4. Deploy the war file to your tomcat instance
+Unless your IDE can start the Grails project apropriately.
+
+CODING
+------
+
+You should understand the Grails ideas to find your way around the code. Where possible, the Grails patterns are
+followed.
+So far the only domain Object is available: The HBase instance definition. Once configured, all other features use
+this object to deal with the hbase instance. All things are stateless and (today) unpooled.
+
+The data is stored using the Grails build-in database.  You may configure it differently using the standard grails
+methods.
+
+The pages use some AJAX patterns from Grails too. Most interaction code (ther is not so much by now) can be
+found in the HbaseSourceController.
+
+All long running actions are handed over to the ThreadService. Running threads are shown in the UI top-right. There is
+no automatic refresh of pages if these threads finish (by now).
+
+The mechanics around submitting a job to hadoop uses jars as usual. Thes jars are build in a hook to grails' build
+process, see scripts/_Events.groovy. Only a few classes are bundled yet. You can study to TableStats.java M/R how its
+done. Only some counters are reported from that job.
+
+There is some code in HbaseClient to allow dumping directly from all region servers (called rowCount). Its not active
+but may give some pointers if one wants to go into this.
+
+TESTING
+-------
+Altough there are currently no tests - PLS be better and implement tests for all things you are changing 
+or adding.
+
+Bob
+

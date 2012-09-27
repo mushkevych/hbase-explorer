@@ -1,0 +1,23 @@
+This Project is based on the [GRAILS Framework|http://grails.org/]. 
+
+The resulting artifact is a WAR file, that can be deployed into any J2EE container.
+
+h1. How to start
+
+* Install Prerequisites
+** Java  @(use the JDK, not the JRE only versions)@
+** [Grails|http://grails.org/]
+** [Tomcat|http://tomcat.apache.org/]
+
+* Checkout Code with subversion
+	@svn co https://hbaseexplorer.svn.sourceforge.net/svnroot/hbaseexplorer hbaseexplorer@
+
+* Set Up you IDE
+What you checked out is the top level of the grails project. An IDE with GRAILS support may detect this automatically.
+
+* Compile
+Unless you do it with your IDE, you may use the usual GRAILs commands to manage compilation and building, e.g.
+    @grails compile@
+    @grails war@
+
+* Deploy the war file to your tomcat instance, unless your IDE can start the Grails project apropriately.

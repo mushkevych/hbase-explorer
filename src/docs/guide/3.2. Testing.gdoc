@@ -1,0 +1,20 @@
+You should understand the Grails ideas to find your way around the code. Where possible, the Grails patterns are
+followed.
+So far the only domain Object is available: The HBase instance definition. Once configured, all other features use
+this object to deal with the hbase instance. All things are stateless and (today) unpooled.
+
+The data is stored using the Grails build-in database.  You may configure it differently using the standard grails
+methods.
+
+The pages use some AJAX patterns from Grails too. Most interaction code (there is not so much by now) can be
+found in the HbaseSourceController.
+
+All long running actions are handed over to the ThreadService. Running threads are shown in the UI top-right. There is
+no automatic refresh of pages if these threads finish (by now).
+
+The mechanics around submitting a job to hadoop uses jars as usual. Thes jars are build in a hook to grails' build
+process, see @scripts/_Events.groovy@. Only a few classes are bundled yet. You can study to [TableStats|com.nnapz.hbaseexplorer.mr.TableStats] M/R how its
+done. Only some counters are reported from that job.
+
+There is some code in HbaseClient to allow dumping directly from all region servers (called rowCount). Its not active
+but may give some pointers if one wants to go into this.

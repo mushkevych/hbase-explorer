@@ -1,0 +1,13 @@
+There are two ways of installing _HBaseExplorer_. Depending on what suits you best download the precompiled package either as WAR or as ZIP file. 
+
+h4. WAR
+The WAR file only needs to be deployed into a running J2EE container, e.g. Tomcat or Glassfish. The Code is tested with tomcat 6.
+
+h4. STANDALONE ZIP
+The ZIP file needs to be unpacked into a directory of your choice. You need to have [Java|http://java.com].
+Use "bin/catalina.bat run" or "bin/catalina.sh run" to start the tomcat instance. It is configured to run on port 6655.
+Point you browser to http://localhost:6655 then.
+
+Read the [docs| http://tomcat.apache.org/] for alternative installation options with tomcat.
+
+All the configurations of hbaseexplorer are kept in a locally, embedded database instance that resides in the @work/hbaseexplorer@ directory of tomcat.
