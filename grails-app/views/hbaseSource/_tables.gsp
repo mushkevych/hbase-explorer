@@ -1,12 +1,12 @@
 <%-- include to show one set of tables. Called by AJAX from list.gsp --%>
 
-  <g:if test="${tableList instanceof String}">
+  <g:if test="${errorMsg != null}">
     <div class="alert alert-error">
-    	${tableList}
+    	${errorMsg}
     </div>
   </g:if>
   <g:else>
-  	<g:each var="table" in="${ tableList }">
+  	<g:each var="table" in="${tableList}">
   		<div class="row <% if (!online.contains(table.nameAsString)){ %>offline<% } %>">
   		<div class="span2">
   			<h3 class="<% if (!online.contains(table.nameAsString)){ %>offline<% } %>">${table.nameAsString}</h3>

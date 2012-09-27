@@ -29,12 +29,12 @@ class OrmDefault implements OrmInterface {
         Map<byte[], Map<Long, Map<String, Map<String, String>>>> casted =
      			        new TreeMap<byte[], Map<Long, Map<String, Map<String, String>>>>();
 
-        TreeMap<byte[], TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>> res =
-     			        new TreeMap<byte[], TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>>();
+        Map<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>> res =
+     			        new TreeMap<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>>();
 
         for (Result row: results) {
             NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> map = row.getMap();
-            TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> rowByTs = HBaseClient.remapByTimestamp(map);
+            Map<Long, Map<String, Map<byte[], byte[]>>> rowByTs = HBaseClient.remapByTimestamp(map);
             res.put(row.getRow(), rowByTs);
         }
 
@@ -42,15 +42,15 @@ class OrmDefault implements OrmInterface {
         for (byte[] rowKey : res.keySet()) {
             Map<Long, Map<String, Map<String, String>>> newMapByRow = new HashMap<Long, Map<String, Map<String, String>>>();
 
-            TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> mapByRowKey = res.get(rowKey);
+            Map<Long, Map<String, Map<byte[], byte[]>>> mapByRowKey = res.get(rowKey);
             for (Long timestamp : mapByRowKey.keySet()) {
                 Map<String, Map<String, String>> newMapByTimestamp = new HashMap<String, Map<String, String>>();
 
-                HashMap<String, HashMap<byte[], byte[]>> mapByTimestamp = mapByRowKey.get(timestamp);
+                Map<String, Map<byte[], byte[]>> mapByTimestamp = mapByRowKey.get(timestamp);
                 for (String familyName : mapByTimestamp.keySet()) {
                     Map<String, String> newMapByFamily = new HashMap<String, String>();
 
-                    HashMap<byte[], byte[]> mapByFamily = mapByTimestamp.get(familyName);
+                    Map<byte[], byte[]> mapByFamily = mapByTimestamp.get(familyName);
                     for (byte[] qualifier : mapByFamily.keySet()) {
                         byte[] value = mapByFamily.get(qualifier);
                         String strQualifier = Bytes.toString(qualifier);

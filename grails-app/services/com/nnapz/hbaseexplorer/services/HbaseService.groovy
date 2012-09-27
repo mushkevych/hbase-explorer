@@ -55,13 +55,13 @@ class HbaseService {
     protected def quartzScheduler
 
     // not used currently
-    TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> get(
+    Map<Long, Map<String, Map<byte[], byte[]>>> get(
             HbaseSource hbaseSourceInstance, String tableName, String rowKey, int versions)
     throws MasterNotRunningException {
         return getHBaseClient(hbaseSourceInstance).get(tableName, rowKey, versions)
     }
 
-    TreeMap<byte[], TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>> scan(
+    Map<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>> scan(
             HbaseSource hbaseSourceInstance, String tableName, byte[] rowKey, int versions, int rows)
     throws MasterNotRunningException {
         return getHBaseClient(hbaseSourceInstance).scan(tableName, rowKey, versions, rows)
@@ -103,9 +103,10 @@ class HbaseService {
                 // todo remove me its an hbase bug
             }
             // poll for completion
+
             threadService.waitFor(50, 500, {
                 try {
-                    admin.isTableEnabled(tableName)
+                    admin.isTableEnabled(spec.nameAsString)
                 } catch (Throwable twb) { /* may not exist yet */}
             })
         })
@@ -131,7 +132,7 @@ class HbaseService {
             // poll for completion
             threadService.waitFor(24 * 60, 60000, {       // 24 hours
                 // give some progress
-                threadService.setStatus asyncName, Math.round(job.mapProgress() * 100) + "%"  // we dont have reducers
+                threadService.setStatus asyncName, Math.round(job.mapProgress() * 100) + "%"  // we don't have reducers
                 job.isComplete();
             })
             // do stats
@@ -148,7 +149,7 @@ class HbaseService {
 
                 tableStats.executionTime = System.currentTimeMillis() - startTime
                 tableStats.regionCount = regionCount(hbaseSourceInstance, tableName)
-                HbaseTableStats.withTransaction {   // we dont have a hibernate session in this unbound thread otherwise
+                HbaseTableStats.withTransaction {   // we don't have a hibernate session in this unbound thread otherwise
                     if (!tableStats.save()) { tableStats.errors.each { println it }}
                 }
                 // per family stats
@@ -164,7 +165,7 @@ class HbaseService {
                     familyStats.valueSize = job.counters.findCounter(prefix, TableStats.VALUES_SIZE).value
                     familyStats.totalTimestamps = job.counters.findCounter(prefix, TableStats.TOTAL_TIMESTAMPS).value
                     familyStats.dataSize = job.counters.findCounter(prefix, TableStats.DATA_SIZE).value
-                    HbaseTableStats.withTransaction {   // we dont have a hibernate session in this unbound thread otherwise
+                    HbaseTableStats.withTransaction {   // we don't have a hibernate session in this unbound thread otherwise
                         if (!familyStats.save()) { familyStats.errors.each { println it }}
                     }
                     tableStats.addToHbaseFamilyStats(familyStats)
@@ -186,9 +187,9 @@ class HbaseService {
     }
 
     /**
-     * Provide a flat (noversion) record from a given versioned tree representation. The ttree is expected to be ordered
+     * Provide a flat (noversion) record from a given versioned tree representation. The tree is expected to be ordered
      * by the oldest entry atop.
-     * @returns family->colum->value , records exist only for existing values
+     * @returns family->column->value , records exist only for existing values
      */
     HashMap<String, HashMap<String, String>> getFlatMap(
             PatternService patternService,
@@ -229,8 +230,7 @@ class HbaseService {
 
     // experimental code
     void executeRowCount(HbaseSource hbaseSourceInstance, String tableName) {
-        HBaseClient hbc = new HBaseClient(
-                hbaseSourceInstance.quorumServers, hbaseSourceInstance.quorumPort, hbaseSourceInstance.jobTracker, null);
+        HBaseClient hbc = new HBaseClient(pool, configHolderService.getConfigHolder(hbaseSourceInstance))
         hbc.executeRowCount tableName
     }
 
@@ -330,7 +330,7 @@ class HbaseService {
                 components.put(name, o);
             }
 
-            pk = primaryKey.generateKey(components).get();
+            pk = primaryKey.generateRowKey(components).get();
         } catch (Exception e) {
             log.error("Unable to form row key from HTTP params", e);
             pk = Bytes.toBytes("");

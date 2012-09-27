@@ -115,8 +115,7 @@ public class HBaseClient {
      * @return a map ts->family-column->value or null, if there is no result
      * @throws IOException on any hbase IO problem
      */
-    public TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> get(String tableName,
-                                                                       String rowKey, int versions) throws IOException {
+    public Map<Long, Map<String, Map<byte[], byte[]>>> get(String tableName, String rowKey, int versions) throws IOException {
         HTableInterface hTable = this.hTablePool.getTable(tableName);
         try {
 	        Get get = new Get(rowKey.getBytes());
@@ -127,7 +126,7 @@ public class HBaseClient {
 	        if (map == null || map.size() == 0) {
 	            return null;
 	        }
-	        TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> output = remapByTimestamp(map);
+	        Map<Long, Map<String, Map<byte[], byte[]>>> output = remapByTimestamp(map);
 	        return output;
         } finally {
         	this.hTablePool.putTable(hTable);
@@ -144,7 +143,7 @@ public class HBaseClient {
      * @return a list of row results about as bif as the rows spec above
      * @throws IOException on any HBase IO problem
      */
-    public TreeMap<byte[], TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>> scan(
+    public Map<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>> scan(
             String tableName, byte[] rowKey, int versions, int rows)
             throws IOException {
         HTableInterface hTable = this.hTablePool.getTable(tableName);
@@ -156,8 +155,8 @@ public class HBaseClient {
 			scan.setStartRow(rowKey);
 			scan.setCaching(rows);
 			scanner = hTable.getScanner(scan);
-			TreeMap<byte[], TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>> res =
-			        new TreeMap<byte[], TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>>();
+			Map<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>> res =
+			        new TreeMap<byte[], Map<Long, Map<String, Map<byte[], byte[]>>>>(Bytes.BYTES_COMPARATOR);
 
 			// fill a list with the re-mapped results
 			Result[] results = scanner.next(rows);
@@ -169,7 +168,7 @@ public class HBaseClient {
 			long startTimeRemapping = System.currentTimeMillis();
 			for (Result row: results) {
 			    NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> map = row.getMap();
-			    TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> rowByTs = remapByTimestamp(map);
+			    Map<Long, Map<String, Map<byte[], byte[]>>> rowByTs = remapByTimestamp(map);
 			    res.put(row.getRow(), rowByTs);
 			}
 			long stopTimeRemapping = System.currentTimeMillis();
@@ -221,11 +220,11 @@ public class HBaseClient {
      * @param map a map as returned by Result.getMap()
      * @return a map  ts->family->column->value
      */
-    public static TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>
+    public static Map<Long, Map<String, Map<byte[], byte[]>>>
         remapByTimestamp(NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> map) {
 
-        TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> output =
-                new TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>>();
+        Map<Long, Map<String, Map<byte[], byte[]>>> output =
+                new TreeMap<Long, Map<String, Map<byte[], byte[]>>>();
 
         for (byte[] familyNameBytes : map.keySet()) {
             String familyName = new String(familyNameBytes);
@@ -240,12 +239,12 @@ public class HBaseClient {
                     byte[] valueBytes = values.get(ts);
                     //System.out.println("      ts\t" + new Date(ts) + "\t" + value);
 
-                    HashMap<String, HashMap<byte[], byte[]>> families = output.get(ts);
+                    Map<String, Map<byte[], byte[]>> families = output.get(ts);
                     if (families == null) {
-                        families = new HashMap<String, HashMap<byte[], byte[]>>();
+                        families = new HashMap<String, Map<byte[], byte[]>>();
                         output.put(ts, families);
                     }
-                    HashMap<byte[], byte[]> family = families.get(familyName);
+                    Map<byte[], byte[]> family = families.get(familyName);
                     if (family == null) {
                         family = new HashMap<byte[], byte[]>();
                         families.put(familyName, family);
@@ -259,12 +258,12 @@ public class HBaseClient {
         return output;
     }
 
-    private void print(TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> output) {
+    private void print(Map<Long, Map<String, Map<byte[], byte[]>>> output) {
         // collect all families
         ArrayList<String> allFamilies = new ArrayList<String>();
         Long[] timestamps = output.keySet().toArray(new Long[output.size()]);
         for (Long ts : timestamps) {
-            HashMap<String, HashMap<byte[], byte[]>> families = output.get(ts);
+            Map<String, Map<byte[], byte[]>> families = output.get(ts);
             for (String familyName : families.keySet()) {
                 if (!allFamilies.contains(familyName)) allFamilies.add(familyName);
             }
@@ -275,9 +274,9 @@ public class HBaseClient {
         Arrays.sort(timestamps);
         for (Long ts : timestamps) {
             System.out.println(new Date(ts) + " (" + ts + ")");
-            HashMap<String, HashMap<byte[], byte[]>> families = output.get(ts);
+            Map<String, Map<byte[], byte[]>> families = output.get(ts);
             for (String familyName : allFamilies) {
-                HashMap<byte[], byte[]> columns = families.get(familyName);
+                Map<byte[], byte[]> columns = families.get(familyName);
                 if (columns != null) {
                     for (byte[] column : columns.keySet()) {
                         String value = new String(columns.get(column));
@@ -421,7 +420,7 @@ public class HBaseClient {
             Configuration conf = configHolder.getConf();
 			HBaseClient hbc = new HBaseClient(new HTablePool(conf, TABLE_POOL_MAX_SIZE), configHolder);
             String rowKey = args[3];
-            TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> o = hbc.get(args[2], rowKey, 100);
+            Map<Long, Map<String, Map<byte[], byte[]>>> o = hbc.get(args[2], rowKey, 100);
             if (o == null || o.size() == 0) {
                 System.out.println("No Result");
             } else {

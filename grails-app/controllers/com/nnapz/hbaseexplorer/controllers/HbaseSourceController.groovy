@@ -368,30 +368,33 @@ class HbaseSourceController {
 			redirect(action: list)
 		}
 
-		def tlist = []         // contains a string or HTableDescriptor[]
+		def errorMsg = null
+        def tList = []         // contains a string or HTableDescriptor[]
 		def onlineList = []    // if the table is online, than its name is in this list
 		try {
 			//   long start = System.currentTimeMillis()
-			tlist = hbaseService.tableList(hbaseSourceInstance)
+			tList = hbaseService.tableList(hbaseSourceInstance)
 			//      System.out.println("tableList: " + (System.currentTimeMillis() - start));
-			tlist.each {
-				String tableName = it.nameAsString
-				if (hbaseService.isTableEnabled(hbaseSourceInstance, tableName)) onlineList << tableName
-			}
+			tList.each {
+                String tableName = it.nameAsString
+                if (hbaseService.isTableEnabled(hbaseSourceInstance, tableName)) {
+                    onlineList.add(tableName)
+                }
+            }
 		} catch (MasterNotRunningException mnr) {
-			tlist = 'Master not running'
-		
-			log.warn "Unable to show table details - Master Not Running"
+            errorMsg = 'Master not running'
+			log.warn("Unable to show table details - Master Not Running")
 		} catch (ZooKeeperConnectionException zkce) {
-			tlist = "ZooKeeper connection problems"
-			log.warn "Unable to show table details - ZooKeeper Connection Exception", zkce
+            errorMsg = "ZooKeeper connection problems"
+			log.error("Unable to show table details - ZooKeeper Connection Exception", zkce)
 		} catch (Exception e){
-			tlist = "Exception occured (${e.toString()}). See logs for details."
-			log.warn "Exception occured while showing table details", e
+            errorMsg = "Exception occured (${e.toString()}). See logs for details."
+			log.error("Exception occured while showing table details", e)
 		}
 
 		render(view: '_tables',
-                model: [tableList: tlist,
+                model: [errorMsg: errorMsg,
+                        tableList: tList,
                         hbaseSourceInstance: hbaseSourceInstance,
                         online: onlineList,
                         hbs: hbaseService])
