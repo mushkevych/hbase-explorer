@@ -19,9 +19,9 @@ import com.nnapz.hbaseexplorer.domain.HbaseFamilyStats
 import com.nnapz.hbaseexplorer.domain.HbaseSource
 import com.nnapz.hbaseexplorer.domain.HbaseTableStats
 import com.nnapz.hbaseexplorer.mr.TableStats
-import com.reinvent.synergy.data.primarykey.AbstractPrimaryKey
-import com.reinvent.synergy.data.system.PoolManager
-import com.reinvent.synergy.data.system.TableContext
+import com.reinvent.surus.primarykey.AbstractPrimaryKey
+import com.reinvent.surus.system.PoolManager
+import com.reinvent.surus.system.TableContext
 import org.apache.hadoop.hbase.HColumnDescriptor
 import org.apache.hadoop.hbase.HTableDescriptor
 import org.apache.hadoop.hbase.MasterNotRunningException

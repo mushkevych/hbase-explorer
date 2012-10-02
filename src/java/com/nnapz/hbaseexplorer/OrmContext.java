@@ -1,9 +1,10 @@
 package com.nnapz.hbaseexplorer;
 
-import com.reinvent.synergy.data.mapping.EntityService;
-import com.reinvent.synergy.data.primarykey.AbstractPrimaryKey;
-import com.reinvent.synergy.data.system.PoolManager;
-import com.reinvent.synergy.data.system.TableContext;
+import com.reinvent.surus.mapping.EntityService;
+import com.reinvent.surus.mapping.HFieldComponent;
+import com.reinvent.surus.primarykey.AbstractPrimaryKey;
+import com.reinvent.surus.system.PoolManager;
+import com.reinvent.surus.system.TableContext;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
@@ -144,7 +145,14 @@ class OrmSurus implements OrmInterface {
     public Map<String, Class> getRowKeyComponents(String tableName) {
         PoolManager poolManager = TableContext.getPoolManager(tableName);
         AbstractPrimaryKey primaryKey = poolManager.getPrimaryKey();
-        return primaryKey.getComponents();
+        HFieldComponent[] components = primaryKey.getComponents();
+
+        Map<String, Class> mapComponents = new HashMap<String, Class>();
+        for (HFieldComponent component : components) {
+            mapComponents.put(component.name(), component.type());
+        }
+
+        return mapComponents;
     }
 
 

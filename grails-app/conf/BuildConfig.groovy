@@ -35,7 +35,7 @@ grails.project.dependency.resolution = {
 	
     dependencies {
 		compile "commons-cli:commons-cli:1.2"
-		compile "com.reinvent.data:synergy-surus:01"
+		compile "com.reinvent.surus:surus-orm:02"
 		compile "com.google.code.gson:gson:1.7.1"
 		compile "com.google.guava:guava:11.0.2"
         compile("org.apache.hadoop:hadoop-mapreduce-client-common:2.0.0-cdh4.0.1") {
