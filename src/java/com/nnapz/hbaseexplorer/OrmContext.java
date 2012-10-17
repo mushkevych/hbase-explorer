@@ -155,7 +155,6 @@ class OrmSurus implements OrmInterface {
         return mapComponents;
     }
 
-
     @Override
     public byte[] generateRowKey(String tableName, Map<String, Object> components) {
         PoolManager poolManager = TableContext.getPoolManager(tableName);

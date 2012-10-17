@@ -9,10 +9,10 @@ insight into the data.
 RELEASE NOTES
 ========================
 
-VERSION 0.6.0 Surus Build
+VERSION 0.6.0 Surus ORM Build
 + Support for multiple ORM 
-+ Build-in support for Surus
-+ Support for complex rowKeys
++ Build-in support for Surus ORM
++ Support for complex (multi-component) rowKeys
 
 VERSION 0.6.0 
 + UI redesign

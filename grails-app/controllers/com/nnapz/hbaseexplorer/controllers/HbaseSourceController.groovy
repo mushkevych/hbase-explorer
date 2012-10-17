@@ -418,10 +418,10 @@ class HbaseSourceController {
 			if (tableName != null && rowKey != null) {
 
 				long start = System.currentTimeMillis()
-				TreeMap<Long, HashMap<String, HashMap<byte[], byte[]>>> out =
+				Map<Long, Map<String, Map<byte[], byte[]>>> out =
 						hbaseService.get(hbaseSourceInstance, tableName, rowKey, versions)
 
-				HashMap<String, HashMap<String, String>> flatRecord =
+				Map<String, Map<String, String>> flatRecord =
                     hbaseService.getFlatMap(patternService, hbaseSourceInstance, tableName, out)
 
 				// get a (sorted) list of family names

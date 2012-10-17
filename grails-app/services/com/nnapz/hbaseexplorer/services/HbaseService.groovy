@@ -32,6 +32,8 @@ import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.mapreduce.Job
 
 import java.util.Map.Entry
+import com.reinvent.surus.mapping.HFieldComponent
+import com.reinvent.surus.mapping.JsonService
 
 /**
  * Groovy Wrapper to access the HBaseService.
@@ -191,24 +193,24 @@ class HbaseService {
      * by the oldest entry atop.
      * @returns family->column->value , records exist only for existing values
      */
-    HashMap<String, HashMap<String, String>> getFlatMap(
+    Map<String, Map<String, String>> getFlatMap(
             PatternService patternService,
             HbaseSource hbaseSourceInstance,
             String tableName,
-            TreeMap<Long, HashMap<String, HashMap<String, String>>> versionedMap) {
+            Map<Long, Map<String, Map<String, String>>> versionedMap) {
 
         HashMap<String, HashMap<String, String>> flatRecord = new HashMap<String, HashMap<String, String>>();
         if (versionedMap != null) {
             Long[] timestamps = versionedMap.keySet().toArray(new Long[versionedMap.size()])
             for (Long ts : timestamps) {
-                HashMap<String, HashMap<String, String>> families = versionedMap.get(ts)
+                Map<String, Map<String, String>> families = versionedMap.get(ts)
 
-                for (Entry<String, HashMap<String, String>> familyEntry : families.entrySet()) {
+                for (Entry<String, Map<String, String>> familyEntry : families.entrySet()) {
                     // fill flat map with last ts
                     String familyName = familyEntry.getKey()
-                    HashMap<String, String> family = familyEntry.getValue()
+                    Map<String, String> family = familyEntry.getValue()
                     if (family == null) continue;
-                    HashMap<String, String> flatFamily = flatRecord.get(familyName)
+                    Map<String, String> flatFamily = flatRecord.get(familyName)
                     if (flatFamily == null) {
                         flatFamily = new HashMap<String, String>()
                         flatRecord.put(familyName, flatFamily)
@@ -299,42 +301,58 @@ class HbaseService {
 
     /* ORM SUPPORT SECTION*/
 
-    public byte[] generateRowKeyFromParams(String tableName, Map params) {
-        byte[] pk;
+    /**
+     * method converts raw string into Java Primitive accordingly to <type>
+     * In case of conversion error default value is returned:
+     * 0 for numeric, "" for string, false for boolean
+     * @param raw string presenting the object
+     * @param type of the target object
+     * @return null if raw is null or valid object otherwise
+     */
+    public Object convertFromStringSafe(JsonService jsonService, String raw, Class type) {
         try {
-            PoolManager poolManager = TableContext.getPoolManager(tableName);
+            return jsonService.convertFromString(raw, type);
+        } catch (NumberFormatException e) {
+            if (type == Integer.class || type == Integer.TYPE) {
+                return new Integer(0);
+            } else if (type == Float.class || type == Float.TYPE) {
+                return new Float(0.0);
+            } else if (type == Double.class || type == Double.TYPE) {
+                return new Double(0);
+            } else if (type == Long.class || type == Long.TYPE) {
+                return new Long(0);
+            } else {
+                throw new IllegalArgumentException("Unknown type " + type.getName());
+            }
+        }
+    }
+
+    public byte[] generateRowKeyFromParams(String tableName, Map params) {
+        byte[] pk = null;
+        JsonService jsonService = null;
+        PoolManager poolManager = TableContext.getPoolManager(tableName);
+        try {
+            jsonService = poolManager.getJsonService();
             AbstractPrimaryKey primaryKey = poolManager.getPrimaryKey();
-            Map<String, Object> components = new HashMap<String, Object>();
+            Map<String, Object> keyComponents = new HashMap<String, Object>();
 
-            Map<String, Class> componentNames = primaryKey.getComponents();
-            for (String name : componentNames.keySet()) {
-                Class type = componentNames.get(name);
-                String value = (String) params.get(name);
-                log.info(String.format("Component name: %s, param value %s", name, value));
-                value = value.trim();
+            HFieldComponent[] fieldComponents = primaryKey.getComponents();
+            for (HFieldComponent component : fieldComponents) {
+                String value = (String) params.get(component.name());
+                log.info(String.format("Component name: %s, param value %s", component, value));
 
-                Object o;
-                if (type == String.class) {
-                    o = value;
-                } else if (type == Integer.class || type == Integer.TYPE) {
-                    o = Integer.parseInt(value);
-                } else if (type == Double.class || type == Double.TYPE) {
-                    o = Double.parseDouble(value);
-                } else if (type == Long.class || type == Long.TYPE) {
-                    o = Long.parseLong(value);
-                } else if (type == Float.class || type == Float.class) {
-                    o = Float.parseFloat(value);
-                } else {
-                    throw new IllegalArgumentException(String.format("Unsupported key component type %s",
-                            type.getName()));
-                }
-                components.put(name, o);
+                Object o = convertFromStringSafe(jsonService, value.trim(), component.type());
+                keyComponents.put(component.name(), o);
             }
 
-            pk = primaryKey.generateRowKey(components).get();
+            pk = primaryKey.generateRowKey(keyComponents).get();
         } catch (Exception e) {
             log.error("Unable to form row key from HTTP params", e);
             pk = Bytes.toBytes("");
+        } finally {
+            if (jsonService != null) {
+                poolManager.putJsonService(jsonService);
+            }
         }
 
         return pk;
